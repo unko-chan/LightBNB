@@ -103,13 +103,13 @@ const getAllProperties = function(options, limit = 10) {
   let queryString = `
   SELECT properties.*, avg(property_reviews.rating) as average_rating
   FROM properties
-  JOIN property_reviews ON properties.id = property_id
+  LEFT JOIN property_reviews ON properties.id = property_id
   `;
 
-  // if (options.owner_id) {
-  //   queryParams.push(`${options.owner_id}`)
-  //   queryString += `JOIN users ON users.id = owner_id WHERE users.id = $${queryParams.length} `
-  // }
+  if (options.owner_id) {
+    queryParams.push(`${options.owner_id}`)
+    queryString += `JOIN users ON users.id = owner_id WHERE users.id = $${queryParams.length} `
+  }
 
   if (options.city) {
     queryParams.push(`%${options.city}%`)
