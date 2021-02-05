@@ -106,6 +106,11 @@ const getAllProperties = function(options, limit = 10) {
   JOIN property_reviews ON properties.id = property_id
   `;
 
+  // if (options.owner_id) {
+  //   queryParams.push(`${options.owner_id}`)
+  //   queryString += `JOIN users ON users.id = owner_id WHERE users.id = $${queryParams.length} `
+  // }
+
   if (options.city) {
     queryParams.push(`%${options.city}%`)
     queryString += `${clause} city LIKE $${queryParams.length} `;
@@ -153,10 +158,30 @@ exports.getAllProperties = getAllProperties;
  * @return {Promise<{}>} A promise to the property.
  */
 const addProperty = function(property) {
-  const propertyId = Object.keys(properties).length + 1;
-  property.id = propertyId;
-  properties[propertyId] = property;
-  return Promise.resolve(property);
+  const queryParams = []
+  for (const key in property) {
+    queryParams.push(property[key])
+  }
+  return pool.query(`
+  INSERT INTO properties (
+    title, 
+    description, 
+    number_of_bedrooms, 
+    number_of_bathrooms, 
+    parking_spaces, 
+    cost_per_night, 
+    thumbnail_photo_url, 
+    cover_photo_url, 
+    street, 
+    country, 
+    city, 
+    province, 
+    post_code, 
+    owner_id
+  ) 
+  VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14) 
+  RETURNING *;
+  `, queryParams)
+  .then(res => res.rows[0]);
 }
 exports.addProperty = addProperty;
-
